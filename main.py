@@ -3,11 +3,11 @@ import uuid
 import logging
 from flask import Flask, render_template, request, abort, send_file
 from pdf2docx import Converter
-from docx2pdf import convert
+import subprocess
 import qrcode
 import io
 import base64
-import pythoncom
+
 
 import tempfile
 from werkzeug.utils import secure_filename
@@ -73,42 +73,47 @@ def pdftoword():
             as_attachment=True,
             download_name=docx_name
         )
-@app.route('/wordtopdf', methods=['GET', 'POST'])  # Allow both GET (show form) and POST (handle upload)
+
+
+@app.route('/wordtopdf', methods=['GET', 'POST'])
 def wordtopdf():
     if request.method == 'GET':
-        # If the user visits the page, just show the upload form
         return render_template('wordtopdf.html')
-    # If the request is POST (form submitted with file)
-    if 'docxupload' not in request.files:
-        # If no file was uploaded, abort with error
-        abort(400, "No file uploaded")          
-    docx_file = request.files['docxupload']  # Get the uploaded file
-    filename = docx_file.filename or 'upload.docx'  # Use the original filename or a default
-    safe_name = secure_filename(filename)  # Sanitize the filename for safety               
-    safe_name = f"{uuid.uuid4().hex}_{safe_name}"  # Add a unique prefix to avoid name clashes
-    with tempfile.TemporaryDirectory() as tmpdir:  # Create a temporary directory for processing
-        docx_path = os.path.join(tmpdir, safe_name)  # Full path for the uploaded DOCX
-        docx_file.save(docx_path)  # Save the uploaded DOCX to the temp directory
 
-        pdf_name = os.path.splitext(safe_name)[0] + '.pdf'  # Create a PDF filename
-        pdf_path = os.path.join(tmpdir, pdf_name)  # Full path for the output PDF
+    if 'docxupload' not in request.files:
+        abort(400, "No file uploaded")
+
+    docx_file = request.files['docxupload']
+    filename = docx_file.filename or 'upload.docx'
+    safe_name = secure_filename(filename)
+    safe_name = f"{uuid.uuid4().hex}_{safe_name}"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        docx_path = os.path.join(tmpdir, safe_name)
+        docx_file.save(docx_path)
+
+        pdf_name = os.path.splitext(safe_name)[0] + '.pdf'
+        pdf_path = os.path.join(tmpdir, pdf_name)
 
         try:
-            pythoncom.CoInitialize()
-            # Convert DOCX to PDF using LibreOffice in headless mode
-            convert(docx_path, pdf_path)
-            pythoncom.CoUninitialize()
-            # Read the resulting DOCX file into memory
-           
+            # Call LibreOffice to convert DOCX → PDF
+            subprocess.run(
+                [
+                    "libreoffice", "--headless", "--convert-to", "pdf",
+                    "--outdir", tmpdir, docx_path
+                ],
+                check=True
+            )
+
             with open(pdf_path, 'rb') as f:
                 pdf_bytes = f.read()
+
         except Exception:
             logging.exception("DOCX->PDF conversion failed")
             abort(500, "Conversion failed")
 
-        # Send the PDF file to the user as a download
         return send_file(
-            io.BytesIO(pdf_bytes),  # Serve from memory
+            io.BytesIO(pdf_bytes),
             mimetype='application/pdf',
             as_attachment=True,
             download_name=pdf_name
