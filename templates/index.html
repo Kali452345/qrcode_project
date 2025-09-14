@@ -45,22 +45,46 @@ body {
 </head>
 <body>
     <div class="topnav">
-  <a class="active" href="#home">Qr-GEN</a>
-  <a href="#news">Pdf to Word</a>
-  <a href="#contact">Word to Pdf</a>
+  <a class="active" href="/">Qr-GEN</a>
+  <a href="/pdftoword">Pdf to Word</a>
+  <a href="/wordtopdf">Word to Pdf</a>
  
 </div>
 
 <div style="padding-left:16px">
-    <h1 style="text-align: center;">QR Code Generator</p>
+    <h1 style="text-align: center;">QR Code Generator</h1>
 </div>
 
     <!-- Step 1: Use a form with method POST and action="/" -->
-    <form method="POST" action="/">
-        <!-- Step 2: Set the input's name attribute to "data" -->
-        <input id="qrcode-input" type="text" name="data" placeholder="Enter QR code data" required>
-        <button type="submit">Generate QR Code</button>
-    </form>
+
+
+    <form style="text-align: center;" method="POST" enctype="multipart/form-data">
+            <input  type="text" name="data" placeholder="Enter text or URL..." required="">
+            <br>
+            <style>/* Basic button styling */
+.my-button {
+  background-color: #007bff; /* Blue background */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding around text */
+  border: none; /* No border */
+  border-radius: 5px; /* Slightly rounded corners */
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+/* Hover effect */
+.my-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Active effect */
+.my-button:active {
+  background-color: #004085; /* Even darker blue when clicked */
+}</style>
+            <button class= my-button type="submit">Generate QR Code</button>
+        </form>
     <!-- Step 7: Display the QR code image if it exists -->
     <div id="qrcode-container">
         {% if qrcode_img %}

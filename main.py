@@ -1,7 +1,16 @@
-from flask import Flask, render_template, request
+import os
+import uuid
+import logging
+from flask import Flask, render_template, request, abort, send_file
+from pdf2docx import Converter
+from docx2pdf import convert
 import qrcode
 import io
 import base64
+import pythoncom
+
+import tempfile
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -23,6 +32,88 @@ def home():
             qrcode_img = 'data:image/png;base64,' + base64.b64encode(img_bytes).decode('utf-8')
     # Step 8: Render the result (QR code image) in your template
     return render_template('index.html', qrcode_img=qrcode_img)
+@app.route('/pdftoword', methods=['GET', 'POST'])  # Allow both GET (show form) and POST (handle upload)
+def pdftoword():
+    if request.method == 'GET':
+        # If the user visits the page, just show the upload form
+        return render_template('pdftoword.html')
+
+    # If the request is POST (form submitted with file)
+    if 'pdfupload' not in request.files:
+        # If no file was uploaded, abort with error
+        abort(400, "No file uploaded")
+    pdf_file = request.files['pdfupload']  # Get the uploaded file
+    filename = pdf_file.filename or 'upload.pdf'  # Use the original filename or a default
+    safe_name = secure_filename(filename)  # Sanitize the filename for safety
+    safe_name = f"{uuid.uuid4().hex}_{safe_name}"  # Add a unique prefix to avoid name clashes
+
+    with tempfile.TemporaryDirectory() as tmpdir:  # Create a temporary directory for processing
+        pdf_path = os.path.join(tmpdir, safe_name)  # Full path for the uploaded PDF
+        pdf_file.save(pdf_path)  # Save the uploaded PDF to the temp directory
+
+        docx_name = os.path.splitext(safe_name)[0] + '.docx'  # Create a DOCX filename
+        docx_path = os.path.join(tmpdir, docx_name)  # Full path for the output DOCX
+
+        try:
+            # Create the Converter object
+            cv = Converter(pdf_path)
+            cv.convert(docx_path)
+            cv.close()
+            # Read the resulting DOCX file into memory
+            with open(docx_path, 'rb') as f:
+                docx_bytes = f.read()
+        except Exception:
+            logging.exception("PDF->DOCX conversion failed")
+            abort(500, "Conversion failed")
+
+        # Send the DOCX file to the user as a download
+        return send_file(
+            io.BytesIO(docx_bytes),  # Serve from memory
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=docx_name
+        )
+@app.route('/wordtopdf', methods=['GET', 'POST'])  # Allow both GET (show form) and POST (handle upload)
+def wordtopdf():
+    if request.method == 'GET':
+        # If the user visits the page, just show the upload form
+        return render_template('wordtopdf.html')
+    # If the request is POST (form submitted with file)
+    if 'docxupload' not in request.files:
+        # If no file was uploaded, abort with error
+        abort(400, "No file uploaded")          
+    docx_file = request.files['docxupload']  # Get the uploaded file
+    filename = docx_file.filename or 'upload.docx'  # Use the original filename or a default
+    safe_name = secure_filename(filename)  # Sanitize the filename for safety               
+    safe_name = f"{uuid.uuid4().hex}_{safe_name}"  # Add a unique prefix to avoid name clashes
+    with tempfile.TemporaryDirectory() as tmpdir:  # Create a temporary directory for processing
+        docx_path = os.path.join(tmpdir, safe_name)  # Full path for the uploaded DOCX
+        docx_file.save(docx_path)  # Save the uploaded DOCX to the temp directory
+
+        pdf_name = os.path.splitext(safe_name)[0] + '.pdf'  # Create a PDF filename
+        pdf_path = os.path.join(tmpdir, pdf_name)  # Full path for the output PDF
+
+        try:
+            pythoncom.CoInitialize()
+            # Convert DOCX to PDF using LibreOffice in headless mode
+            convert(docx_path, pdf_path)
+            pythoncom.CoUninitialize()
+            # Read the resulting DOCX file into memory
+           
+            with open(pdf_path, 'rb') as f:
+                pdf_bytes = f.read()
+        except Exception:
+            logging.exception("DOCX->PDF conversion failed")
+            abort(500, "Conversion failed")
+
+        # Send the PDF file to the user as a download
+        return send_file(
+            io.BytesIO(pdf_bytes),  # Serve from memory
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=pdf_name
+        )
+
 
 if __name__ == '__main__':
     app.run(debug=True)

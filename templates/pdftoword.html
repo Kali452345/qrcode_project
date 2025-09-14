@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pdf to Word</title>
+
+</head>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+</style>
+
+
+
+<div class="topnav">
+  <a href="/">Qr-GEN</a>
+  <a class="active" href="/pdftoword">Pdf to Word</a>
+  <a href="/wordtopdf">Word to Pdf</a>
+
+</div>
+<h1 style="text-align: center;">pdf to word</h1>
+<form action="/pdftoword" method="post" enctype="multipart/form-data">
+  <label for="doc_upload">Upload Documents (PDF):</label>
+  <input type="file" id="doc_upload" name="pdfupload" accept="application/pdf">
+  <style>/* Basic button styling */
+.my-button {
+  background-color: #007bff; /* Blue background */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding around text */
+  border: none; /* No border */
+  border-radius: 5px; /* Slightly rounded corners */
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+/* Hover effect */
+.my-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Active effect */
+.my-button:active {
+  background-color: #004085; /* Even darker blue when clicked */
+}</style>
+  <input class="my-button" type="submit" value="Submit and Download">
+</form>
+
+
+
+</html>
