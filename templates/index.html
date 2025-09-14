@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        #qrcode-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+</style>
+</head>
+<body>
+    <div class="topnav">
+  <a class="active" href="#home">Qr-GEN</a>
+  <a href="#news">Pdf to Word</a>
+  <a href="#contact">Word to Pdf</a>
+ 
+</div>
+
+<div style="padding-left:16px">
+    <h1 style="text-align: center;">QR Code Generator</p>
+</div>
+
+    <!-- Step 1: Use a form with method POST and action="/" -->
+    <form method="POST" action="/">
+        <!-- Step 2: Set the input's name attribute to "data" -->
+        <input id="qrcode-input" type="text" name="data" placeholder="Enter QR code data" required>
+        <button type="submit">Generate QR Code</button>
+    </form>
+    <!-- Step 7: Display the QR code image if it exists -->
+    <div id="qrcode-container">
+        {% if qrcode_img %}
+            <img src="{{ qrcode_img }}" alt="QR Code">
+        {% endif %}
+    </div>
+</body>
+</html>
