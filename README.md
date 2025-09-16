@@ -46,7 +46,7 @@ LINUX(Master Branch):
    - Open your browser at `http://localhost:8000` (or specified port).
 
 ---
-Windows (Windows Branch)
+Windows (Windows-Version)
 1. **Clone the Repository: Or Download as zip **
    ```bash
    git clone https://github.com/Kali452345/qrcode_project.git
