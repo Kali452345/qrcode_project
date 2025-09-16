@@ -3,7 +3,7 @@ import uuid
 import logging
 from flask import Flask, render_template, request, abort, send_file
 from pdf2docx import Converter
-import subprocess
+from docx2pdf import convert
 import qrcode
 import io
 import base64
@@ -96,15 +96,8 @@ def wordtopdf():
         pdf_path = os.path.join(tmpdir, pdf_name)
 
         try:
-            # Call LibreOffice to convert DOCX → PDF
-            subprocess.run(
-                [
-                    "libreoffice", "--headless", "--convert-to", "pdf",
-                    "--outdir", tmpdir, docx_path
-                ],
-                check=True
-            )
 
+            convert(docx_path, pdf_path)
             with open(pdf_path, 'rb') as f:
                 pdf_bytes = f.read()
 
